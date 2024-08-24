@@ -656,6 +656,8 @@ $IPT -A OUTPUT -m state --state NEW,ESTABLISHED,RELATED -j ACCEPT
 
 # Записываем правила
 /sbin/iptables-save > /etc/sysconfig/iptables
+sudo iptables-save | sudo tee /etc/sysconfig/iptables
+iptables -L
 
 # Включение iptables и отключение SELinux
 systemctl enable iptables
