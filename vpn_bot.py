@@ -2,7 +2,6 @@ import logging
 import subprocess
 from telegram import Update
 from telegram.ext import ApplicationBuilder, CommandHandler, ContextTypes
-import asyncio
 
 # Установите уровень логирования
 logging.basicConfig(format='%(asctime)s - %(name)s - %(levelname)s - %(message)s', level=logging.INFO)
@@ -24,10 +23,8 @@ async def create_user(update: Update, context: ContextTypes.DEFAULT_TYPE) -> Non
     try:
         result = subprocess.run(
             ['./create_user.sh'], 
-            input=f"{username}\n{password}\n", 
-            text=True, 
-            capture_output=True
-        )
+            input=f"{username}\n{password}\n", text=True, 
+            capture_output=True )
         
         if result.returncode == 0:
             await update.message.reply_text(f'Пользователь {username} успешно создан.')
@@ -46,4 +43,15 @@ async def main() -> None:
 
 # Запуск бота
 if __name__ == '__main__':
-    asyncio.run(main())
+    import asyncio
+
+    # Проверяем, есть ли уже запущенный цикл событий
+    try:
+        asyncio.get_event_loop().run_until_complete(main())
+    except RuntimeError as e:
+        if 'This event loop is already running' in str(e):
+            # Если цикл событий уже запущен, используем ensure_future
+            loop = asyncio.get_event_loop()
+            loop.create_task(main())
+        else:
+            raise
