@@ -1,43 +1,47 @@
 import logging
 import subprocess
 from telegram import Update
-from telegram.ext import Updater, CommandHandler, CallbackContext
+from telegram.ext import ApplicationBuilder, CommandHandler, ContextTypes
 
 # Установите уровень логирования
 logging.basicConfig(format='%(asctime)s - %(name)s - %(levelname)s - %(message)s', level=logging.INFO)
 
 # Вставьте свой токен
-TOKEN = ''
+TOKEN = 'YOUR_TELEGRAM_BOT_TOKEN'
 
-def start(update: Update, context: CallbackContext) -> None:
-    update.message.reply_text('Привет! Я бот для управления VPN. Используйте /createuser для создания нового пользователя.')
+async def start(update: Update, context: ContextTypes.DEFAULT_TYPE) -> None:
+    await update.message.reply_text('Привет! Я бот для управления VPN. Используйте /createuser для создания нового пользователя.')
 
-def create_user(update: Update, context: CallbackContext) -> None:
+async def create_user(update: Update, context: ContextTypes.DEFAULT_TYPE) -> None:
     if len(context.args) < 2:
-        update.message.reply_text('Используйте: /createuser <username> <password>')
+        await update.message.reply_text('Используйте: /createuser <username> <password>')
         return
 
     username = context.args[0]
     password = context.args[1]
- try:
-        # Запуск скрипта create_user.sh с параметрами result = subprocess.run(['./create_user.sh'], input=f"{username}\n{password}\n", text=True, capture_output=True)
+
+    try:
+        # Запуск скрипта create_user.sh с параметрами result = subprocess.run(
+            ['./create_user.sh'], 
+            input=f"{username}\n{password}\n", 
+            text=True, 
+            capture_output=True
+        )
+        
         if result.returncode == 0:
-            update.message.reply_text(f'Пользователь {username} успешно создан.')
+            await update.message.reply_text(f'Пользователь {username} успешно создан.')
         else:
-            update.message.reply_text(f'Ошибка: {result.stderr}')
+            await update.message.reply_text(f'Ошибка: {result.stderr}')
     except Exception as e:
-        update.message.reply_text(f'Произошла ошибка: {str(e)}')
+        await update.message.reply_text(f'Произошла ошибка: {str(e)}')
 
-def main() -> None:
-    updater = Updater(TOKEN)
+async def main() -> None:
+    application = ApplicationBuilder().token(TOKEN).build()
 
-    dispatcher = updater.dispatcher
+    application.add_handler(CommandHandler("start", start))
+    application.add_handler(CommandHandler("createuser", create_user))
 
-    dispatcher.add_handler(CommandHandler("start", start))
-    dispatcher.add_handler(CommandHandler("createuser", create_user))
-
-    updater.start_polling()
-    updater.idle()
+    await application.run_polling()
 
 if __name__ == '__main__':
-    main()
+    import asyncio asyncio.run(main())
