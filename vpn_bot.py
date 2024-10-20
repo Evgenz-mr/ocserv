@@ -46,14 +46,4 @@ async def main() -> None:
 
 # Запуск бота
 if __name__ == '__main__':
-    # Получаем текущий цикл событий
-    loop = asyncio.get_event_loop()
-    
-    # Запускаем основную функцию в виде задачи loop.create_task(main())
-    
-    # Запускаем цикл событий try:
-        loop.run_forever()
-    except KeyboardInterrupt:
-        pass
-    finally:
-        # Закрываем цикл событий loop.close()
+    asyncio.run(main())
